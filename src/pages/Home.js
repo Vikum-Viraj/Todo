@@ -7,6 +7,7 @@ export default function Home() {
     const [showAddModal, setShowAddModal] = useState(false);
     const [deleteConfirm, setDeleteConfirm] = useState(null);
     const [todos, setTodos] = useState([]);
+    const [filter, setFilter] = useState('all');
 
     useEffect(() => {
         const stored = localStorage.getItem('todos');
@@ -18,7 +19,7 @@ export default function Home() {
                     return;
                 }
             } catch (err) {
-                // ignore parse errors and fall back to defaults
+                console.error('Failed to parse todos from localStorage', err);
             }
         }
         setTodos([]);
@@ -105,6 +106,10 @@ export default function Home() {
         setDeleteConfirm(null);
     };
 
+    const filteredTodos = filter === 'all' 
+        ? todos 
+        : todos.filter(todo => todo.status === filter);
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
@@ -144,14 +149,62 @@ export default function Home() {
                     </div>
                 </div>
 
+                {/* Filter Buttons */}
+                <div className="flex flex-wrap gap-2 mb-6">
+                    <button
+                        onClick={() => setFilter('all')}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            filter === 'all'
+                                ? 'bg-indigo-600 text-white'
+                                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                        }`}
+                    >
+                        All ({todos.length})
+                    </button>
+                    <button
+                        onClick={() => setFilter('pending')}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            filter === 'pending'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                        }`}
+                    >
+                        Pending ({todos.filter(t => t.status === 'pending').length})
+                    </button>
+                    <button
+                        onClick={() => setFilter('completed')}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            filter === 'completed'
+                                ? 'bg-green-600 text-white'
+                                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                        }`}
+                    >
+                        Completed ({todos.filter(t => t.status === 'completed').length})
+                    </button>
+                    <button
+                        onClick={() => setFilter('uncompleted')}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            filter === 'uncompleted'
+                                ? 'bg-red-600 text-white'
+                                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                        }`}
+                    >
+                        Uncompleted ({todos.filter(t => t.status === 'uncompleted').length})
+                    </button>
+                </div>
+
                 {/* Todos List */}
                 <div className="space-y-4">
-                    {todos.length === 0 ? (
+                    {filteredTodos.length === 0 ? (
                         <div className="bg-white rounded-lg shadow p-8 text-center">
-                            <p className="text-gray-500 text-lg">No tasks yet. Create one to get started!</p>
+                            <p className="text-gray-500 text-lg">
+                                {todos.length === 0 
+                                    ? 'No tasks yet. Create one to get started!' 
+                                    : `No ${filter} tasks found.`}
+                            </p>
                         </div>
                     ) : (
-                        todos.map(todo => (
+                        filteredTodos.map(todo => (
                             <div
                                 key={todo.id}
                                 className={`bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6 ${todo.status === 'completed' ? 'opacity-60' : ''}`}
