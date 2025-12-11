@@ -1,40 +1,33 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ViewTodo from '../components/ViewTodo';
+import AddToDo from '../components/AddToDo';
 
 export default function Home() {
     const [selectedTodo, setSelectedTodo] = useState(null);
-    const [todos, setTodos] = useState([
-        {
-            id: 1,
-            title: 'Complete project proposal',
-            description: 'Finish writing the project proposal document and submit for review',
-            dueDate: '2025-12-15'
-        },
-        {
-            id: 2,
-            title: 'Review pull requests',
-            description: 'Check and approve pending pull requests from the team',
-            dueDate: '2025-12-12'
-        },
-        {
-            id: 3,
-            title: 'Update documentation',
-            description: '',
-            dueDate: '2025-12-20'
-        },
-        {
-            id: 4,
-            title: 'Fix bug in login page',
-            description: 'Users are reporting issues with password reset functionality',
-            dueDate: '2025-12-13'
-        },
-        {
-            id: 5,
-            title: 'Schedule team meeting',
-            description: '',
-            dueDate: '2025-12-14'
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [todos, setTodos] = useState([]);
+
+    useEffect(() => {
+        const stored = localStorage.getItem('todos');
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed)) {
+                    setTodos(parsed);
+                    return;
+                }
+            } catch (err) {
+                // ignore parse errors and fall back to defaults
+            }
         }
-    ]);
+        setTodos([]);
+    }, []);
+
+    useEffect(() => {
+        if (todos.length > 0) {
+            localStorage.setItem('todos', JSON.stringify(todos));
+        }
+    }, [todos]);
 
     const formatDate = (dateString) => {
         const options = { year: 'numeric', month: 'short', day: 'numeric' };
@@ -55,15 +48,35 @@ export default function Home() {
 
     const handleBackToList = () => {
         setSelectedTodo(null);
-    }
+    };
+
+    const handleAddTodo = (newTodo) => {
+        const todoToAdd = {
+            ...newTodo,
+            id: Date.now(),
+            completed: false,
+        };
+        setTodos((prev) => [todoToAdd, ...prev]);
+        setShowAddModal(false);
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-2">My Tasks</h1>
-                    <p className="text-gray-600">Keep track of your todos and stay organized</p>
+                <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h1 className="text-4xl font-bold text-gray-900 mb-2">My Tasks</h1>
+                        <p className="text-gray-600">Keep track of your todos and stay organized</p>
+                    </div>
+                    <div className="flex justify-start sm:justify-end">
+                        <button
+                            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium shadow"
+                            onClick={() => setShowAddModal(true)}
+                        >
+                            + Add Todo
+                        </button>
+                    </div>
                 </div>
 
                 {/* Stats */}
@@ -143,6 +156,20 @@ export default function Home() {
                             onClick={(e) => e.stopPropagation()}
                         >
                             <ViewTodo todo={selectedTodo} onBack={handleBackToList} />
+                        </div>
+                    </div>
+                )}
+
+                {showAddModal && (
+                    <div
+                        className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 backdrop-blur-sm px-4 py-10"
+                        onClick={() => setShowAddModal(false)}
+                    >
+                        <div
+                            className="w-full max-w-2xl"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <AddToDo onAdd={handleAddTodo} onClose={() => setShowAddModal(false)} />
                         </div>
                     </div>
                 )}
