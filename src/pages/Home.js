@@ -42,6 +42,18 @@ export default function Home() {
         return new Date(dueDate).toDateString() === new Date().toDateString();
     };
 
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'completed':
+                return 'bg-green-100 text-green-800';
+            case 'uncompleted':
+                return 'bg-red-100 text-red-800';
+            case 'pending':
+            default:
+                return 'bg-blue-100 text-blue-800';
+        }
+    };
+
     const handleViewTodo = (todo) => {
         setSelectedTodo(todo);
     };
@@ -54,10 +66,26 @@ export default function Home() {
         const todoToAdd = {
             ...newTodo,
             id: Date.now(),
-            completed: false,
+            status: 'pending',
         };
-        setTodos((prev) => [todoToAdd, ...prev]);
+        setTodos((prev) => [todoToAdd, ...prev])
         setShowAddModal(false);
+    };
+
+    const handleStatusChange = (todoId, newStatus) => {
+       setTodos((prev) => 
+            prev.map((todo) => (
+                todo.id === todoId ? { ...todo, status: newStatus} : todo
+            ))
+        )
+    };
+
+    const handleToggleCompleted = (todoId) => {
+        setTodos((prev) =>
+            prev.map((todo) =>
+                todo.id === todoId ? { ...todo, completed: !todo.completed } : todo
+            )
+        );
     };
 
     return (
@@ -86,15 +114,15 @@ export default function Home() {
                         <p className="text-3xl font-bold text-blue-600 mt-2">{todos.length}</p>
                     </div>
                     <div className="bg-white rounded-lg shadow p-6">
-                        <p className="text-gray-600 text-sm font-medium">Overdue</p>
-                        <p className="text-3xl font-bold text-red-600 mt-2">
-                            {todos.filter(todo => isOverdue(todo.dueDate)).length}
+                        <p className="text-gray-600 text-sm font-medium">Completed</p>
+                        <p className="text-3xl font-bold text-green-600 mt-2">
+                            {todos.filter(todo => todo.status === 'completed').length}
                         </p>
                     </div>
                     <div className="bg-white rounded-lg shadow p-6">
-                        <p className="text-gray-600 text-sm font-medium">Due Today</p>
+                        <p className="text-gray-600 text-sm font-medium">Pending</p>
                         <p className="text-3xl font-bold text-orange-600 mt-2">
-                            {todos.filter(todo => isToday(todo.dueDate)).length}
+                            {todos.filter(todo => todo.status === 'pending').length}
                         </p>
                     </div>
                 </div>
@@ -109,15 +137,15 @@ export default function Home() {
                         todos.map(todo => (
                             <div
                                 key={todo.id}
-                                className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6"
+                                className={`bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6 ${todo.status === 'completed' ? 'opacity-60' : ''}`}
                             >
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="flex-1">
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                                        <h3 className={`text-lg font-semibold mb-1 ${todo.status === 'completed' ? 'line-through text-gray-500' : 'text-gray-900'}`}>
                                             {todo.title}
                                         </h3>
                                         {todo.description && (
-                                            <p className="text-gray-600 text-sm mb-3">{todo.description}</p>
+                                            <p className={`text-sm mb-3 ${todo.status === 'completed' ? 'text-gray-400' : 'text-gray-600'}`}>{todo.description}</p>
                                         )}
                                         <div className="flex items-center gap-2">
                                             <span className="text-xs font-medium text-gray-500">Due:</span>
@@ -135,12 +163,31 @@ export default function Home() {
                                             </span>
                                         </div>
                                     </div>
-                                    <button className="px-4 py-2 bg-indigo-600
-                                     text-white rounded-lg hover:bg-indigo-700 
-                                     transition-colors text-sm font-medium" 
-                                     onClick={() => handleViewTodo(todo)}>
-                                        View
-                                    </button>
+                                    <div className="flex gap-2 items-center">
+                                        <div className="relative">
+                                            <select
+                                                value={todo.status || 'pending'}
+                                                onChange={(e) => handleStatusChange(todo.id, e.target.value)}
+                                                className={`rounded-lg px-3 py-2 text-sm font-medium cursor-pointer border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${getStatusColor(todo.status || 'pending')}`}
+                                            >
+                                                <option value="pending">Pending</option>
+                                                <option value="completed">Completed</option>
+                                                <option value="uncompleted">Uncompleted</option>
+                                            </select>
+                                        </div>
+                                        <button className="px-4 py-2 bg-indigo-600
+                                         text-white rounded-lg hover:bg-indigo-700 
+                                         transition-colors text-sm font-medium" 
+                                         onClick={() => handleViewTodo(todo)}>
+                                            View
+                                        </button>
+                                          <button className="px-4 py-2 bg-purple-600
+                                         text-white rounded-lg hover:bg-purple-700 
+                                         transition-colors text-sm font-medium" 
+                                         >
+                                            Edit
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         ))
@@ -155,7 +202,7 @@ export default function Home() {
                             className="w-full max-w-3xl"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <ViewTodo todo={selectedTodo} onBack={handleBackToList} />
+                            <ViewTodo todo={selectedTodo} onBack={handleBackToList} onToggleCompleted={handleToggleCompleted} onStatusChange={handleStatusChange} />
                         </div>
                     </div>
                 )}
