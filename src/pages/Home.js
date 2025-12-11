@@ -58,6 +58,18 @@ export default function Home() {
         }
     };
 
+    const getCardStyle = (status) => {
+        switch (status) {
+            case 'completed':
+                return 'bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-l-green-500';
+            case 'uncompleted':
+                return 'bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-l-red-500';
+            case 'pending':
+            default:
+                return 'bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-l-blue-500';
+        }
+    };
+
     const handleViewTodo = (todo) => {
         setSelectedTodo(todo);
     };
@@ -218,20 +230,23 @@ export default function Home() {
                         filteredTodos.map(todo => (
                             <div
                                 key={todo.id}
-                                className={`bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6 ${todo.status === 'completed' ? 'opacity-60' : ''}`}
+                                className={`rounded-lg shadow hover:shadow-lg transition-all duration-300 p-4 sm:p-6 ${getCardStyle(todo.status)} ${todo.status === 'completed' ? 'opacity-75' : ''}`}
                             >
-                                <div className="flex items-start justify-between gap-4">
+                                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                                     <div className="flex-1">
-                                        <h3 className={`text-lg font-semibold mb-1 ${todo.status === 'completed' ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className={`w-3 h-3 rounded-full flex-shrink-0 ${todo.status === 'completed' ? 'bg-green-500' : todo.status === 'uncompleted' ? 'bg-red-500' : 'bg-blue-500'}`}></span>
+                                            <h3 className={`text-base sm:text-lg font-semibold ${todo.status === 'completed' ? 'line-through text-gray-500' : 'text-gray-900'}`}>
                                             {todo.title}
                                         </h3>
+                                        </div>
                                         {todo.description && (
                                             <p className={`text-sm mb-3 ${todo.status === 'completed' ? 'text-gray-400' : 'text-gray-600'}`}>{todo.description}</p>
                                         )}
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 flex-wrap">
                                             <span className="text-xs font-medium text-gray-500">Due:</span>
                                             <span
-                                                className={`text-sm font-medium ${isOverdue(todo.dueDate)
+                                                className={`text-xs sm:text-sm font-medium ${isOverdue(todo.dueDate)
                                                         ? 'text-red-600 bg-red-50 px-2 py-1 rounded'
                                                         : isToday(todo.dueDate)
                                                             ? 'text-orange-600 bg-orange-50 px-2 py-1 rounded'
@@ -244,36 +259,38 @@ export default function Home() {
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="flex gap-2 items-center">
-                                        <div className="relative">
+                                    <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                                        <div className="relative w-full sm:w-auto">
                                             <select
                                                 value={todo.status || 'pending'}
                                                 onChange={(e) => handleStatusChange(todo.id, e.target.value)}
-                                                className={`rounded-lg px-3 py-2 text-sm font-medium cursor-pointer border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${getStatusColor(todo.status || 'pending')}`}
+                                                className={`w-full sm:w-auto rounded-lg px-3 py-2 text-sm font-medium cursor-pointer border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${getStatusColor(todo.status || 'pending')}`}
                                             >
                                                 <option value="pending">Pending</option>
                                                 <option value="completed">Completed</option>
                                                 <option value="uncompleted">Uncompleted</option>
                                             </select>
                                         </div>
-                                        <button className="px-4 py-2 bg-indigo-600
-                                         text-white rounded-lg hover:bg-indigo-700 
-                                         transition-colors text-sm font-medium" 
-                                         onClick={() => handleViewTodo(todo)}>
-                                            View
-                                        </button>
-                                        <button className="px-4 py-2 bg-amber-500
-                                         text-white rounded-lg hover:bg-amber-600 
-                                         transition-colors text-sm font-medium"
-                                         onClick={() => setEditTodo(todo)}>
-                                            Edit
-                                        </button>
-                                        <button className="px-4 py-2 bg-red-600
-                                         text-white rounded-lg hover:bg-red-700 
-                                         transition-colors text-sm font-medium"
-                                         onClick={() => handleDeleteTodo(todo.id)}>
-                                            Delete
-                                        </button>
+                                        <div className="flex gap-2">
+                                            <button className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-indigo-600
+                                             text-white rounded-lg hover:bg-indigo-700 
+                                             transition-colors text-sm font-medium" 
+                                             onClick={() => handleViewTodo(todo)}>
+                                                View
+                                            </button>
+                                            <button className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-amber-500
+                                             text-white rounded-lg hover:bg-amber-600 
+                                             transition-colors text-sm font-medium"
+                                             onClick={() => setEditTodo(todo)}>
+                                                Edit
+                                            </button>
+                                            <button className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-red-600
+                                             text-white rounded-lg hover:bg-red-700 
+                                             transition-colors text-sm font-medium"
+                                             onClick={() => handleDeleteTodo(todo.id)}>
+                                                Delete
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
