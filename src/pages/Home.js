@@ -10,6 +10,10 @@ export default function Home() {
     const [editTodo, setEditTodo] = useState(null);
     const [todos, setTodos] = useState([]);
     const [filter, setFilter] = useState('all');
+    const [darkMode, setDarkMode] = useState(() => {
+        const saved = localStorage.getItem('darkMode');
+        return saved ? JSON.parse(saved) : false;
+    });
 
     useEffect(() => {
         const stored = localStorage.getItem('todos');
@@ -33,6 +37,10 @@ export default function Home() {
         }
     }, [todos]);
 
+    useEffect(() => {
+        localStorage.setItem('darkMode', JSON.stringify(darkMode));
+    }, [darkMode]);
+
     const formatDate = (dateString) => {
         const options = { year: 'numeric', month: 'short', day: 'numeric' };
         return new Date(dateString).toLocaleDateString('en-US', options);
@@ -49,16 +57,27 @@ export default function Home() {
     const getStatusColor = (status) => {
         switch (status) {
             case 'completed':
-                return 'bg-green-100 text-green-800';
+                return darkMode ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-800';
             case 'uncompleted':
-                return 'bg-red-100 text-red-800';
+                return darkMode ? 'bg-red-900 text-red-300' : 'bg-red-100 text-red-800';
             case 'pending':
             default:
-                return 'bg-blue-100 text-blue-800';
+                return darkMode ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-800';
         }
     };
 
     const getCardStyle = (status) => {
+        if (darkMode) {
+            switch (status) {
+                case 'completed':
+                    return 'bg-gradient-to-r from-green-900/50 to-emerald-900/50 border-l-4 border-l-green-500';
+                case 'uncompleted':
+                    return 'bg-gradient-to-r from-red-900/50 to-rose-900/50 border-l-4 border-l-red-500';
+                case 'pending':
+                default:
+                    return 'bg-gradient-to-r from-blue-900/50 to-indigo-900/50 border-l-4 border-l-blue-500';
+            }
+        }
         switch (status) {
             case 'completed':
                 return 'bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-l-green-500';
@@ -134,15 +153,31 @@ export default function Home() {
         : todos.filter(todo => todo.status === filter);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4 sm:px-6 lg:px-8">
+        <div className={`min-h-screen py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-indigo-100'}`}>
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <h1 className="text-4xl font-bold text-gray-900 mb-2">My Tasks</h1>
-                        <p className="text-gray-600">Keep track of your todos and stay organized</p>
+                        <h1 className={`text-4xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>My Tasks</h1>
+                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Keep track of your todos and stay organized</p>
                     </div>
-                    <div className="flex justify-start sm:justify-end">
+                    <div className="flex items-center gap-3 justify-start sm:justify-end">
+                        {/* Dark Mode Toggle */}
+                        <button
+                            onClick={() => setDarkMode(!darkMode)}
+                            className={`p-2 rounded-lg transition-colors ${darkMode ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600' : 'bg-white text-gray-700 hover:bg-gray-100 shadow'}`}
+                            aria-label="Toggle dark mode"
+                        >
+                            {darkMode ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                            ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                                </svg>
+                            )}
+                        </button>
                         <button
                             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium shadow"
                             onClick={() => setShowAddModal(true)}
@@ -154,18 +189,18 @@ export default function Home() {
 
                 {/* Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <p className="text-gray-600 text-sm font-medium">Total Tasks</p>
+                    <div className={`rounded-lg shadow p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                        <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Tasks</p>
                         <p className="text-3xl font-bold text-blue-600 mt-2">{todos.length}</p>
                     </div>
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <p className="text-gray-600 text-sm font-medium">Completed</p>
+                    <div className={`rounded-lg shadow p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                        <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Completed</p>
                         <p className="text-3xl font-bold text-green-600 mt-2">
                             {todos.filter(todo => todo.status === 'completed').length}
                         </p>
                     </div>
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <p className="text-gray-600 text-sm font-medium">Pending</p>
+                    <div className={`rounded-lg shadow p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                        <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Pending</p>
                         <p className="text-3xl font-bold text-orange-600 mt-2">
                             {todos.filter(todo => todo.status === 'pending').length}
                         </p>
@@ -179,7 +214,9 @@ export default function Home() {
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                             filter === 'all'
                                 ? 'bg-indigo-600 text-white'
-                                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                                : darkMode 
+                                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
+                                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                         }`}
                     >
                         All ({todos.length})
@@ -189,7 +226,9 @@ export default function Home() {
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                             filter === 'pending'
                                 ? 'bg-blue-600 text-white'
-                                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                                : darkMode 
+                                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
+                                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                         }`}
                     >
                         Pending ({todos.filter(t => t.status === 'pending').length})
@@ -199,7 +238,9 @@ export default function Home() {
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                             filter === 'completed'
                                 ? 'bg-green-600 text-white'
-                                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                                : darkMode 
+                                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
+                                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                         }`}
                     >
                         Completed ({todos.filter(t => t.status === 'completed').length})
@@ -209,7 +250,9 @@ export default function Home() {
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                             filter === 'uncompleted'
                                 ? 'bg-red-600 text-white'
-                                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                                : darkMode 
+                                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
+                                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                         }`}
                     >
                         Uncompleted ({todos.filter(t => t.status === 'uncompleted').length})
@@ -219,8 +262,8 @@ export default function Home() {
                 {/* Todos List */}
                 <div className="space-y-4">
                     {filteredTodos.length === 0 ? (
-                        <div className="bg-white rounded-lg shadow p-8 text-center">
-                            <p className="text-gray-500 text-lg">
+                        <div className={`rounded-lg shadow p-8 text-center ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                            <p className={`text-lg ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                 {todos.length === 0 
                                     ? 'No tasks yet. Create one to get started!' 
                                     : `No ${filter} tasks found.`}
@@ -236,21 +279,21 @@ export default function Home() {
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
                                             <span className={`w-3 h-3 rounded-full flex-shrink-0 ${todo.status === 'completed' ? 'bg-green-500' : todo.status === 'uncompleted' ? 'bg-red-500' : 'bg-blue-500'}`}></span>
-                                            <h3 className={`text-base sm:text-lg font-semibold ${todo.status === 'completed' ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                                            <h3 className={`text-base sm:text-lg font-semibold ${todo.status === 'completed' ? 'line-through text-gray-500' : darkMode ? 'text-white' : 'text-gray-900'}`}>
                                             {todo.title}
                                         </h3>
                                         </div>
                                         {todo.description && (
-                                            <p className={`text-sm mb-3 ${todo.status === 'completed' ? 'text-gray-400' : 'text-gray-600'}`}>{todo.description}</p>
+                                            <p className={`text-sm mb-3 ${todo.status === 'completed' ? 'text-gray-500' : darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{todo.description}</p>
                                         )}
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="text-xs font-medium text-gray-500">Due:</span>
+                                            <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Due:</span>
                                             <span
                                                 className={`text-xs sm:text-sm font-medium ${isOverdue(todo.dueDate)
-                                                        ? 'text-red-600 bg-red-50 px-2 py-1 rounded'
+                                                        ? darkMode ? 'text-red-400 bg-red-900/50 px-2 py-1 rounded' : 'text-red-600 bg-red-50 px-2 py-1 rounded'
                                                         : isToday(todo.dueDate)
-                                                            ? 'text-orange-600 bg-orange-50 px-2 py-1 rounded'
-                                                            : 'text-green-600 bg-green-50 px-2 py-1 rounded'
+                                                            ? darkMode ? 'text-orange-400 bg-orange-900/50 px-2 py-1 rounded' : 'text-orange-600 bg-orange-50 px-2 py-1 rounded'
+                                                            : darkMode ? 'text-green-400 bg-green-900/50 px-2 py-1 rounded' : 'text-green-600 bg-green-50 px-2 py-1 rounded'
                                                     }`}
                                             >
                                                 {formatDate(todo.dueDate)}
