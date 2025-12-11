@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import ViewTodo from '../components/ViewTodo';
 import AddToDo from '../components/AddToDo';
+import UpdateTodo from '../components/UpdateTodo';
 
 export default function Home() {
     const [selectedTodo, setSelectedTodo] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
     const [deleteConfirm, setDeleteConfirm] = useState(null);
+    const [editTodo, setEditTodo] = useState(null);
     const [todos, setTodos] = useState([]);
     const [filter, setFilter] = useState('all');
 
@@ -72,6 +74,15 @@ export default function Home() {
         };
         setTodos((prev) => [todoToAdd, ...prev])
         setShowAddModal(false);
+    };
+
+    const handleUpdateTodo = (updatedTodo) => {
+        setTodos((prev) =>
+            prev.map((todo) =>
+                todo.id === updatedTodo.id ? updatedTodo : todo
+            )
+        );
+        setEditTodo(null);
     };
 
     const handleStatusChange = (todoId, newStatus) => {
@@ -251,6 +262,12 @@ export default function Home() {
                                          onClick={() => handleViewTodo(todo)}>
                                             View
                                         </button>
+                                        <button className="px-4 py-2 bg-amber-500
+                                         text-white rounded-lg hover:bg-amber-600 
+                                         transition-colors text-sm font-medium"
+                                         onClick={() => setEditTodo(todo)}>
+                                            Edit
+                                        </button>
                                         <button className="px-4 py-2 bg-red-600
                                          text-white rounded-lg hover:bg-red-700 
                                          transition-colors text-sm font-medium"
@@ -287,6 +304,20 @@ export default function Home() {
                             onClick={(e) => e.stopPropagation()}
                         >
                             <AddToDo onAdd={handleAddTodo} onClose={() => setShowAddModal(false)} />
+                        </div>
+                    </div>
+                )}
+
+                {editTodo && (
+                    <div
+                        className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 backdrop-blur-sm px-4 py-10"
+                        onClick={() => setEditTodo(null)}
+                    >
+                        <div
+                            className="w-full max-w-2xl"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <UpdateTodo todo={editTodo} onUpdate={handleUpdateTodo} onClose={() => setEditTodo(null)} />
                         </div>
                     </div>
                 )}
